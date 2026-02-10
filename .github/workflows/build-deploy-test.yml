@@ -124,16 +124,6 @@ jobs:
         sleep 90
         kubectl logs -n default -l app=cargo-cats-dataservice --previous
 
-    - name: Label deployments for Contrast Agent
-      run: |
-        echo "Labeling deployments for Contrast Agent integration..."
-        kubectl label deployment cargo-cats-contrast-cargo-cats-dataservice contrast-agent=flex --overwrite || true
-        kubectl label deployment cargo-cats-contrast-cargo-cats-webhookservice contrast-agent=flex --overwrite || true
-        kubectl label deployment cargo-cats-contrast-cargo-cats-frontgateservice contrast-agent=flex --overwrite || true
-        kubectl label deployment cargo-cats-contrast-cargo-cats-imageservice contrast-agent=flex --overwrite || true
-        kubectl label deployment cargo-cats-contrast-cargo-cats-labelservice contrast-agent=flex --overwrite || true
-        kubectl label deployment cargo-cats-contrast-cargo-cats-docservice contrast-agent=flex --overwrite || true
-
     - name: Wait for ingress controller
       run: |
         echo "Waiting for ingress controller to be ready..."
@@ -141,7 +131,6 @@ jobs:
 
     - name: Deploy simulation console
       run: |
-        source .env
         export INGRESS_IP=$(kubectl get service cargo-cats-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
         echo "Ingress controller IP: $INGRESS_IP"
 
@@ -155,18 +144,18 @@ jobs:
           --set consoleui.contrastApiToken=${CONTRAST__AGENT__TOKEN} \
           --set consoleui.contrastUniqName=${CONTRAST__UNIQ__NAME} \
           --set consoleui.contrastApiKey=${CONTRAST__API__KEY} \
-          --set consoleui.contrastApiAuthorization=${CONTRAST__API__AUTHORIZATION} \
-          --wait --timeout=10m
+          --set consoleui.contrastApiAuthorization=${CONTRAST__API__AUTHORIZATION}
+          #--wait --timeout=10m
 
-    - name: Wait for all services to be ready
-      run: |
-        echo "Waiting for all pods to be ready..."
-        kubectl wait --for=condition=ready pod --all --timeout=600s
+    # - name: Wait for all services to be ready
+    #   run: |
+    #     echo "Waiting for all pods to be ready..."
+    #     kubectl wait --for=condition=ready pod --all --timeout=600s
 
-        echo "Checking deployment status..."
-        kubectl get deployments -o wide
-        kubectl get pods -o wide
-        kubectl get services
+    #     echo "Checking deployment status..."
+    #     kubectl get deployments -o wide
+    #     kubectl get pods -o wide
+    #     kubectl get services
 
     - name: Setup port forwarding for testing
       run: |
