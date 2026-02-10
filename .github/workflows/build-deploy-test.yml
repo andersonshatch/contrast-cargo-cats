@@ -173,10 +173,7 @@ jobs:
     - name: Run ineffective attacks simulation
       run: |
         echo "Running ineffective attacks..."
-        curl -X POST "http://localhost:8080/api/simulate/ineffective" \
-          -H "Content-Type: application/json" \
-          -d '{"target": "cargocats.localhost", "duration": 60}' \
-          --max-time 120 || echo "Ineffective attacks completed with errors (expected)"
+        curl "http://localhost:8080/zap/scan/start"
 
     - name: Wait between attack phases
       run: |
@@ -186,10 +183,7 @@ jobs:
     - name: Run effective attacks simulation
       run: |
         echo "Running effective attacks..."
-        curl -X POST "http://localhost:8080/api/simulate/effective" \
-          -H "Content-Type: application/json" \
-          -d '{"target": "cargocats.localhost", "duration": 120}' \
-          --max-time 180 || echo "Effective attacks completed with errors (expected)"
+        curl "http://localhost:8080/exploit/start"
 
     - name: Collect logs and status
       if: always()
