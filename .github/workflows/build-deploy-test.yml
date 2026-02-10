@@ -165,7 +165,7 @@ jobs:
     - name: Setup port forwarding for testing
       run: |
         # Port forward the console service for testing
-        kubectl port-forward service/console-ui 8080:80 &
+        kubectl port-forward service/console-ui 8080:5000 &
 
         # Wait a moment for port forwarding to establish
         sleep 10
