@@ -121,8 +121,13 @@ jobs:
           --cleanup-on-fail \
           --set contrast.uniqName=ja
         #--wait --timeout=10m
-        sleep 90
-        kubectl logs -n default -l app=dataservice --previous
+        
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-frontgateservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-dataservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-webhookservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-labelservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-docservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-imageservice
 
     - name: Wait for ingress controller
       run: |
