@@ -113,6 +113,7 @@ jobs:
           --namespace contrast-agent-operator \
           --set clusterDefaults.enabled=true \
           --set clusterDefaults.existingTokenSecret=contrast-agent-token \
+          --set operator.enableAgentStdout=true \
           --wait --timeout=300s
 
     - name: Deploy cargo-cats application
@@ -183,8 +184,8 @@ jobs:
 
     - name: Wait between attack phases
       run: |
-        echo "Waiting 30 seconds for activity..."
-        sleep 30
+        echo "Waiting 1 minute for activity..."
+        sleep 60
         curl "http://localhost:8080/exploit/status"
 
     - name: Collect logs and status
@@ -194,12 +195,35 @@ jobs:
         kubectl get all -o wide
 
         echo "=== POD LOGS ==="
-        kubectl logs --tail=50 -l app=cargo-cats-dataservice || echo "No dataservice logs"
-        kubectl logs --tail=50 -l app=cargo-cats-frontgateservice || echo "No frontgateservice logs"
-        kubectl logs --tail=50 -l app=simulation-console-console-ui || echo "No console logs"
+        mkdir -p pod-logs
+        
+        # Collect logs from all pods
+        for pod in $(kubectl get pods -o name); do
+          pod_name=$(echo $pod | cut -d'/' -f2)
+          echo "Collecting logs for $pod_name..."
+          kubectl logs $pod --all-containers=true > pod-logs/${pod_name}.log 2>&1 || echo "Failed to get logs for $pod_name"
+        done
+        
+        # Also collect previous logs if pods have restarted
+        for pod in $(kubectl get pods -o name); do
+          pod_name=$(echo $pod | cut -d'/' -f2)
+          echo "Collecting previous logs for $pod_name..."
+          kubectl logs $pod --previous --all-containers=true > pod-logs/${pod_name}-previous.log 2>&1 || echo "No previous logs for $pod_name"
+        done
 
         echo "=== EVENTS ==="
-        kubectl get events --sort-by=.metadata.creationTimestamp
+        kubectl get events --sort-by=.metadata.creationTimestamp > pod-logs/events.log
+
+        echo "=== POD DESCRIPTIONS ==="
+        kubectl describe pods > pod-logs/pod-descriptions.log
+
+    - name: Upload pod logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pod-logs-${{ github.run_number }}
+        path: pod-logs/
+        retention-days: 14
 
     - name: Cleanup
       if: always()
