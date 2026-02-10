@@ -6,7 +6,7 @@ metadata:
   name: '{{.Release.Name}}-{{ .Values.imageservice.name }}'
   namespace: {{ .Release.Namespace }}
   labels:
-    contrast-agent: flex
+    contrast-agent: dotnet-core
 spec:
   selector:
     matchLabels:

@@ -4,7 +4,7 @@ metadata:
   name: '{{.Release.Name}}-{{ .Values.labelservice.name }}'
   namespace: {{ .Release.Namespace }}
   labels:
-    contrast-agent: flex
+    contrast-agent: nodejs
 spec:
   selector:
     matchLabels:
