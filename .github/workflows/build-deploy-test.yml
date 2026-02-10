@@ -125,7 +125,7 @@ jobs:
 
     - name: Deploy cargo-cats application
       run: |
-        helm upgrade --install cargo-cats ./contrast-cargo-cats \
+        helm upgrade --install contrast-cargo-cats ./contrast-cargo-cats \
           --cleanup-on-fail \
           --set contrast.uniqName=ja
         #--wait --timeout=10m
@@ -133,11 +133,11 @@ jobs:
     - name: Wait for ingress controller
       run: |
         echo "Waiting for ingress controller to be ready..."
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-ingress-nginx-controller
+        kubectl wait --for=condition=available --timeout=300s deployment/contrast-cargo-cats-ingress-nginx-controller
 
     - name: Deploy simulation console
       run: |
-        export INGRESS_IP=$(kubectl get service cargo-cats-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
+        export INGRESS_IP=$(kubectl get service contrast-cargo-cats-ingress-nginx-controller -o jsonpath='{.spec.clusterIP}')
         echo "Ingress controller IP: $INGRESS_IP"
 
         helm upgrade --install simulation-console ./simulation-console \
@@ -160,12 +160,12 @@ jobs:
         kubectl wait --for=condition=ready --timeout=300s pod -l app=console-ui
         kubectl wait --for=condition=available --timeout=300s deployment/simulation-console-zapproxy
         echo "Waiting for cargo-cats deployments to be ready..."
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-frontgateservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-dataservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-webhookservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-labelservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-docservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-imageservice
+        kubectl wait --for=condition=available --timeout=300s deployment/contrast-cargo-cats-frontgateservice
+        kubectl wait --for=condition=available --timeout=300s deployment/contrast-cargo-cats-dataservice
+        kubectl wait --for=condition=available --timeout=300s deployment/contrast-cargo-cats-webhookservice
+        kubectl wait --for=condition=available --timeout=300s deployment/contrast-cargo-cats-labelservice
+        kubectl wait --for=condition=available --timeout=300s deployment/contrast-cargo-cats-docservice
+        kubectl wait --for=condition=available --timeout=300s deployment/contrast-cargo-cats-imageservice
 
     - name: Setup port forwarding for testing
       run: |
