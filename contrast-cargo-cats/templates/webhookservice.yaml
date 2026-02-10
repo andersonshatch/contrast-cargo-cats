@@ -20,7 +20,7 @@ spec:
       containers:
         - name: {{ .Values.webhookservice.name }}
           image: {{ .Values.webhookservice.image }} 
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           env:
           - name: CONTRAST__APPLICATION__NAME
             value: '{{ .Values.contrast.uniqName }}-{{.Release.Name}}-{{ .Values.webhookservice.name }}'

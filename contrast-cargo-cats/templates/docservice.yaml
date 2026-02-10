@@ -22,7 +22,7 @@ spec:
       containers:
         - name: {{ .Values.docservice.name }}
           image: {{ .Values.docservice.image }} 
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           env:
           - name: CONTRAST__APPLICATION__NAME
             value: '{{ .Values.contrast.uniqName }}-{{.Release.Name}}-{{ .Values.docservice.name }}'
