@@ -158,6 +158,7 @@ jobs:
         echo "Waiting for simulation console deployment to be ready..."
         kubectl wait --for=condition=available --timeout=300s deployment/simulation-console-console-ui
         kubectl wait --for=condition=ready --timeout=300s pod -l app=console-ui
+        kubectl wait --for=condition=available --timeout=300s deployment/simulation-console-zapproxy
 
     - name: Setup port forwarding for testing
       run: |
@@ -168,22 +169,23 @@ jobs:
         sleep 10
 
         # Test that the console is accessible
-        curl -f http://localhost:8080/health || echo "Console health check failed, continuing anyway"
+        curl -f http://localhost:8080/zap/scan/status || echo "Console health check failed, continuing anyway"
 
     - name: Run ineffective attacks simulation
       run: |
         echo "Running ineffective attacks..."
         curl "http://localhost:8080/zap/scan/start"
 
-    - name: Wait between attack phases
-      run: |
-        echo "Waiting 30 seconds between attack phases..."
-        sleep 30
-
     - name: Run effective attacks simulation
       run: |
         echo "Running effective attacks..."
         curl "http://localhost:8080/exploit/start"
+
+    - name: Wait between attack phases
+      run: |
+        echo "Waiting 30 seconds for activity..."
+        sleep 30
+        curl "http://localhost:8080/exploit/status"
 
     - name: Collect logs and status
       if: always()
@@ -194,7 +196,7 @@ jobs:
         echo "=== POD LOGS ==="
         kubectl logs --tail=50 -l app=cargo-cats-dataservice || echo "No dataservice logs"
         kubectl logs --tail=50 -l app=cargo-cats-frontgateservice || echo "No frontgateservice logs"
-        kubectl logs --tail=50 -l app=simulation-console-consoleui || echo "No console logs"
+        kubectl logs --tail=50 -l app=simulation-console-console-ui || echo "No console logs"
 
         echo "=== EVENTS ==="
         kubectl get events --sort-by=.metadata.creationTimestamp
