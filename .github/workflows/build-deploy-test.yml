@@ -122,6 +122,7 @@ jobs:
           --set contrast.uniqName=ja
         #--wait --timeout=10m
         
+        echo "Waiting for cargo-cats deployments to be ready..."
         kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-frontgateservice
         kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-dataservice
         kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-webhookservice
@@ -152,15 +153,11 @@ jobs:
           --set consoleui.contrastApiAuthorization=${CONTRAST__API__AUTHORIZATION}
           #--wait --timeout=10m
 
-    # - name: Wait for all services to be ready
-    #   run: |
-    #     echo "Waiting for all pods to be ready..."
-    #     kubectl wait --for=condition=ready pod --all --timeout=600s
-
-    #     echo "Checking deployment status..."
-    #     kubectl get deployments -o wide
-    #     kubectl get pods -o wide
-    #     kubectl get services
+    - name: Wait for simulation console to be ready
+      run: |
+        echo "Waiting for simulation console deployment to be ready..."
+        kubectl wait --for=condition=available --timeout=300s deployment/simulation-console-console-ui
+        kubectl wait --for=condition=ready --timeout=300s pod -l app=console-ui
 
     - name: Setup port forwarding for testing
       run: |
