@@ -119,8 +119,10 @@ jobs:
       run: |
         helm upgrade --install cargo-cats ./contrast-cargo-cats \
           --cleanup-on-fail \
-          --set contrast.uniqName=ja \
-          --wait --timeout=10m
+          --set contrast.uniqName=ja
+        #--wait --timeout=10m
+        sleep 90
+        kubectl logs -n default -l app=cargo-cats-dataservice --previous
 
     - name: Label deployments for Contrast Agent
       run: |
