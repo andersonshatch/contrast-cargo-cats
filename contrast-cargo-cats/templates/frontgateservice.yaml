@@ -28,6 +28,10 @@ spec:
             value: '{{ .Values.contrast.uniqName }}-{{.Release.Name}}-{{ .Values.frontgateservice.name }}'
           - name: CONTRAST__SERVER__NAME
             value: '{{ .Values.contrast.uniqName }}-{{.Release.Name}}-{{ .Values.frontgateservice.name }}-agent'
+          - name: CONTRAST__APPLICATION__TAGS
+            value: 'cargo-cats,global-shipping'
+          - name: CONTRAST__APPLICATION__SESSION_METADATA
+            value: 'helmRelease={{.Release.Name}},helmRevision={{.Release.Revision}},helmNamespace={{.Release.Namespace}},buildNumber={{.Values.buildNumber}}'
           - name: SPRING_DATASOURCE_URL
             value: 'jdbc:mysql://{{.Release.Name}}-db:3306/{{ .Values.mysql.database }}?createDatabaseIfNotExist=true'
           - name: SPRING_DATASOURCE_USERNAME

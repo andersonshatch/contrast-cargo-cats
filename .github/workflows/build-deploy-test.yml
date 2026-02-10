@@ -127,7 +127,8 @@ jobs:
       run: |
         helm upgrade --install contrast-cargo-cats ./contrast-cargo-cats \
           --cleanup-on-fail \
-          --set contrast.uniqName=ja
+          --set contrast.uniqName=ja \
+          --set buildNumber=${{ github.run_number }}
         #--wait --timeout=10m
 
     - name: Wait for ingress controller

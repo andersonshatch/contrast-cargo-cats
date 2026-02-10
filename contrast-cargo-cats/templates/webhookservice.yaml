@@ -26,6 +26,10 @@ spec:
             value: '{{ .Values.contrast.uniqName }}-{{.Release.Name}}-{{ .Values.webhookservice.name }}'
           - name: CONTRAST__SERVER__NAME
             value: '{{ .Values.contrast.uniqName }}-{{.Release.Name}}-{{ .Values.webhookservice.name }}-agent'
+          - name: CONTRAST__APPLICATION__TAGS
+            value: 'cargo-cats,global-shipping'
+          - name: CONTRAST__APPLICATION__SESSION_METADATA
+            value: 'helmRelease={{.Release.Name}},helmRevision={{.Release.Revision}},helmNamespace={{.Release.Namespace}},buildNumber={{.Values.buildNumber}}'
           ports:
             - containerPort: 5000
           resources:
