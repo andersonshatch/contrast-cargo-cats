@@ -129,14 +129,6 @@ jobs:
           --cleanup-on-fail \
           --set contrast.uniqName=ja
         #--wait --timeout=10m
-        
-        echo "Waiting for cargo-cats deployments to be ready..."
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-frontgateservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-dataservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-webhookservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-labelservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-docservice
-        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-imageservice
 
     - name: Wait for ingress controller
       run: |
@@ -161,12 +153,19 @@ jobs:
           --set consoleui.contrastApiAuthorization=${CONTRAST__API__AUTHORIZATION}
           #--wait --timeout=10m
 
-    - name: Wait for simulation console to be ready
+    - name: Wait for resources to be ready
       run: |
         echo "Waiting for simulation console deployment to be ready..."
         kubectl wait --for=condition=available --timeout=300s deployment/simulation-console-console-ui
         kubectl wait --for=condition=ready --timeout=300s pod -l app=console-ui
         kubectl wait --for=condition=available --timeout=300s deployment/simulation-console-zapproxy
+        echo "Waiting for cargo-cats deployments to be ready..."
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-frontgateservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-dataservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-webhookservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-labelservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-docservice
+        kubectl wait --for=condition=available --timeout=300s deployment/cargo-cats-imageservice
 
     - name: Setup port forwarding for testing
       run: |
