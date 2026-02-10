@@ -62,12 +62,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Prepare storage directories
+      run: |
+        sudo mkdir -p /tmp/k3d-storage /var/lib/rancher/k3s/storage
+        sudo chmod 777 /tmp/k3d-storage /var/lib/rancher/k3s/storage
+        echo "Available disk space:"
+        df -h /tmp /var/lib
+
     - name: Setup K3D cluster
       uses: nolar/setup-k3d-k3s@v1
       with:
         version: v1.28
         k3d-name: cargo-cats-cluster
-        k3d-args: "--port 80:80@loadbalancer --port 443:443@loadbalancer"
+        k3d-args: "--port 80:80@loadbalancer --port 443:443@loadbalancer --volume /tmp/k3d-storage:/tmp --volume /var/lib/rancher/k3s/storage:/var/lib/rancher/k3s/storage"
 
     - name: Set up Helm
       uses: azure/setup-helm@v3
