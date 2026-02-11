@@ -191,8 +191,8 @@ jobs:
 
     - name: Wait between attack phases
       run: |
-        echo "Waiting 1 minute for activity..."
-        sleep 60
+        echo "Waiting for activity..."
+        sleep 90
         curl "http://localhost:8080/exploit/status"
 
     - name: Collect logs and status
@@ -241,3 +241,24 @@ jobs:
         # Optional: Clean up cluster (k3d will be cleaned up automatically by the action)
         helm uninstall cargo-cats || true
         helm uninstall simulation-console || true
+  fetch-results:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - ja-contrast-cargo-cats-dataservice
+          - ja-contrast-cargo-cats-docservice
+          - ja-contrast-cargo-cats-frontgateservice
+          - ja-contrast-cargo-cats-imageservice
+          - ja-contrast-cargo-cats-labelservice
+          - ja-contrast-cargo-cats-webhookservice
+    needs: deploy
+    steps:
+      - name: Assess verify
+        uses: Contrast-Security-OSS/integration-verify-github-action@summary
+        with:
+          apiKey: ${{ secrets.CONTRAST_API_KEY }}
+          orgId: ${{ vars.CONTRAST_ORG_ID }}
+          authHeader: ${{ secrets.CONTRAST_AUTHORIZATION_KEY }}
+          appName: ${{ matrix.service }}
+          apiUrl: https://${{ vars.CONTRAST_HOST }}
