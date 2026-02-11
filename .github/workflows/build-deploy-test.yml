@@ -262,3 +262,4 @@ jobs:
           authHeader: ${{ secrets.CONTRAST_AUTHORIZATION_KEY }}
           appName: ${{ matrix.service }}
           apiUrl: https://${{ vars.CONTRAST_HOST }}
+          buildNumber: ${{ github.run_number }}
