@@ -179,6 +179,11 @@ jobs:
         # Test that the console is accessible
         curl -f http://localhost:8080/zap/scan/status || echo "Console health check failed, continuing anyway"
 
+    - name: Run traffic simulation
+      run: |
+        echo "Running traffic simulation..."
+        curl "http://localhost:8080/traffic/start"
+
     - name: Run ineffective attacks simulation
       run: |
         echo "Waiting for ZAP to be healthy..."
