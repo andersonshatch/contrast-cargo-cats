@@ -30,6 +30,8 @@ spec:
             value: 'cargo-cats,global-shipping'
           - name: CONTRAST__APPLICATION__SESSION_METADATA
             value: 'helmRelease={{.Release.Name}},helmRevision={{.Release.Revision}},helmNamespace={{.Release.Namespace}},buildNumber={{.Values.buildNumber}}'
+          - name: CONTRAST__APPLICATION__VERSION
+            value: '{{.Values.buildNumber}}'
           ports:
             - containerPort: 5000
           resources:
