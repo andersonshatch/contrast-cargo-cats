@@ -244,6 +244,7 @@ jobs:
   fetch-results:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         service:
           - ja-contrast-cargo-cats-dataservice
