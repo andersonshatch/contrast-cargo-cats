@@ -10,7 +10,8 @@ import com.contrast.dataservice.repository.ShipmentRepository;
 import com.contrast.dataservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,10 +29,7 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private ShipmentRepository shipmentRepository;
     
-    // INSECURE: Using MD5 for educational purposes to demonstrate weak password storage
-    // MD5 is cryptographically broken and should NEVER be used in production
-    @SuppressWarnings("deprecation") // Intentionally using deprecated MD5 for educational demo
-    private final MessageDigestPasswordEncoder passwordEncoder = new MessageDigestPasswordEncoder("MD5");
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public void run(String... args) throws Exception {
@@ -50,7 +48,6 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    @SuppressWarnings("deprecation") // Intentionally using deprecated MD5 for educational demo
     private User createAdminUser() {
         try {
             if (!userRepository.existsByUsername("admin")) {
