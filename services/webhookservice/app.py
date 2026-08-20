@@ -8,6 +8,7 @@ import mysql.connector
 from mysql.connector import Error
 import sys
 import logging
+import re
 
 # Configure environment variables with defaults
 DB_HOST = os.getenv('DB_HOST', 'contrast-cargo-cats-db')
@@ -184,6 +185,23 @@ def periodic_task():
         if connection and connection.is_connected():
             connection.close()
 
+def validate_hostname(hostname):
+    if not hostname or not isinstance(hostname, str):
+        return False
+    hostname = hostname.strip()
+    if len(hostname) > 253:
+        return False
+    hostname_pattern = re.compile(
+        r'^(?=.{1,253}$)'
+        r'(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)*'
+        r'[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)$'
+    )
+    ipv4_pattern = re.compile(
+        r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+        r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+    )
+    return bool(hostname_pattern.match(hostname) or ipv4_pattern.match(hostname))
+
 def start_background_scheduler(initial_delay=60):
     """Start the background scheduler for periodic tasks"""
     def run_scheduler():
@@ -276,12 +294,17 @@ def test_connection():
         logger.error("Error: URL parameter is missing")
         return jsonify({"error": "URL parameter is required"}), 400
     
+    url = url.strip()
+    
+    if not validate_hostname(url):
+        logger.error(f"Error: Invalid hostname or IP address: {url}")
+        return jsonify({"error": "Invalid hostname or IP address"}), 400
+    
     try:
-        command = f"ping -c 1 {url}"
-        logger.info(f"Executing command: {command}")
+        command = ["ping", "-c", "1", url]
+        logger.info(f"Executing command: {' '.join(command)}")
         
-        # Execute the command in shell - this is the vulnerable part!
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=30)
+        result = subprocess.run(command, capture_output=True, text=True, timeout=30)
         
         logger.info(f"Command completed with return code: {result.returncode}")
         logger.info(f"Command stdout: {result.stdout.strip()}")
@@ -291,7 +314,7 @@ def test_connection():
         return jsonify({
             "message": "Test connection completed",
             "original_url": url,
-            "command_executed": command,
+            "command_executed": ' '.join(command),
             "return_code": result.returncode,
             "stdout": result.stdout,
             "stderr": result.stderr,
