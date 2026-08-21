@@ -22,6 +22,9 @@ from kubernetes import client, config
 # setup
 ########################################
 app = Flask(__name__)
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 # Configure logging to output to stdout
 logging.basicConfig(
     level=logging.INFO,
