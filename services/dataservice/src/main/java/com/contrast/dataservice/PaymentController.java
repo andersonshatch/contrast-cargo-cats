@@ -37,41 +37,51 @@ public class PaymentController {
             
             // entities are too hard. cant figure em out. im just gonna use raw sql
             if (creditCard != null && !creditCard.isEmpty() && shipmentId != null && !shipmentId.isEmpty()) {
-                // Create credit card table if it doesn't exist in the credit_cards database
-                String createTableSql = "CREATE TABLE IF NOT EXISTS credit_card (" +
-                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
-                    "card_number VARCHAR(255) NOT NULL, " +
-                    "shipment_id BIGINT NOT NULL)";
-                creditCardsJdbcTemplate.execute(createTableSql);
-                
-                // Insert credit card data into the credit_cards database
-                String insertSql = "INSERT INTO credit_card (card_number, shipment_id) VALUES ('" + creditCard + "', " + shipmentId + ")";
-                System.out.println("DEBUG: Executing SQL statement: " + insertSql + " on credit_cards database");
-                System.out.println("DEBUG: Credit Card parameter: " + creditCard);
-                System.out.println("DEBUG: Shipment ID parameter: " + shipmentId);
-                
-                // Execute the insert statement using the creditCardsJdbcTemplate (operates on credit_cards database)
-                System.out.println("DEBUG: Using creditCardsJdbcTemplate to execute query on credit_cards database");
-                creditCardsJdbcTemplate.execute(insertSql);
-                
-                // Update the main shipment table to reference the credit card (but not store the actual number)
-                String updateSql = "UPDATE shipment SET credit_card = 'XXXX-XXXX-XXXX-" + 
-                    (creditCard.length() > 4 ? creditCard.substring(creditCard.length() - 4) : creditCard) + 
-                    "' WHERE id = " + shipmentId + ";";
-                
-                System.out.println("DEBUG: Using main jdbcTemplate to execute query on main database");
-                
-                // Execute the update statement using the default jdbcTemplate
-                jdbcTemplate.execute(updateSql);
-                
-                // Create response with success message
-                result = List.of(Map.of(
-                    "success", true,
-                    "message", "Credit card stored in separate database for shipment",
-                    "shipment_id", shipmentId,
-                    "credit_card", "XXXX-XXXX-XXXX-" + 
-                        (creditCard.length() > 4 ? creditCard.substring(creditCard.length() - 4) : creditCard)
-                ));
+                try {
+                    // Validate that shipmentId is a valid number
+                    Long shipmentIdLong = Long.valueOf(shipmentId);
+                    
+                    // Create credit card table if it doesn't exist in the credit_cards database
+                    String createTableSql = "CREATE TABLE IF NOT EXISTS credit_card (" +
+                        "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                        "card_number VARCHAR(255) NOT NULL, " +
+                        "shipment_id BIGINT NOT NULL)";
+                    creditCardsJdbcTemplate.execute(createTableSql);
+                    
+                    // Insert credit card data into the credit_cards database using parameterized query
+                    String insertSql = "INSERT INTO credit_card (card_number, shipment_id) VALUES (?, ?)";
+                    System.out.println("DEBUG: Executing SQL statement: " + insertSql + " on credit_cards database");
+                    System.out.println("DEBUG: Credit Card parameter: " + creditCard);
+                    System.out.println("DEBUG: Shipment ID parameter: " + shipmentId);
+                    
+                    // Execute the insert statement using the creditCardsJdbcTemplate (operates on credit_cards database)
+                    System.out.println("DEBUG: Using creditCardsJdbcTemplate to execute query on credit_cards database");
+                    creditCardsJdbcTemplate.update(insertSql, creditCard, shipmentIdLong);
+                    
+                    // Update the main shipment table to reference the credit card (but not store the actual number) using parameterized query
+                    String maskedCard = "XXXX-XXXX-XXXX-" + (creditCard.length() > 4 ? creditCard.substring(creditCard.length() - 4) : creditCard);
+                    String updateSql = "UPDATE shipment SET credit_card = ? WHERE id = ?";
+                    
+                    System.out.println("DEBUG: Using main jdbcTemplate to execute query on main database");
+                    
+                    // Execute the update statement using the default jdbcTemplate with parameters
+                    jdbcTemplate.update(updateSql, maskedCard, shipmentIdLong);
+                    
+                    // Create response with success message
+                    result = List.of(Map.of(
+                        "success", true,
+                        "message", "Credit card stored in separate database for shipment",
+                        "shipment_id", shipmentId,
+                        "credit_card", maskedCard
+                    ));
+                } catch (NumberFormatException e) {
+                    result = List.of(Map.of(
+                        "error", true,
+                        "message", "Invalid shipment ID format. Must be a valid number.",
+                        "credit_card_param", creditCard,
+                        "shipment_id_param", shipmentId
+                    ));
+                }
             } else {
                 result = List.of(Map.of(
                     "error", true,
